@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>FC26 Squad Optimizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script src="../../../../Downloads/LPSoccer%20(1)/deck-stage.js"></script>
+<style>
+  :root{
+    --bg: #f6f5f1;
+    --ink: #1a1a1a;
+    --muted: #6b6b66;
+    --rule: #d9d7cf;
+    --card: #ffffff;
+    --accent: oklch(0.55 0.15 35); /* burnt orange */
+    --accent-soft: oklch(0.94 0.03 35);
+  }
+  html,body{margin:0;background:#111;}
+  deck-stage{ background:#111; }
+  section{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    padding:80px 110px;
+    box-sizing:border-box;
+    display:flex; flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  section::before{
+    content:""; position:absolute; top:48px; left:110px; right:110px;
+    height:1px; background:var(--rule);
+  }
+  section::after{
+    content:""; position:absolute; bottom:48px; left:110px; right:110px;
+    height:1px; background:var(--rule);
+  }
+  .crumb{
+    position:absolute; top:58px; left:110px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px; letter-spacing:0.08em; color:var(--muted);
+    text-transform:uppercase;
+  }
+  .page{
+    position:absolute; top:58px; right:110px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px; color:var(--muted);
+  }
+  h1,h2,h3{ font-family:'Newsreader', serif; font-weight:500; letter-spacing:-0.01em; }
+  h1{ font-size:88px; line-height:1.02; margin:0 0 24px; }
+  h2{ font-size:52px; line-height:1.05; margin:48px 0 36px; }
+  h3{ font-size:28px; line-height:1.2; margin:0 0 12px; font-weight:600; }
+  p{ font-size:22px; line-height:1.5; margin:0 0 16px; color:#2a2a2a; }
+  .sub{ font-family:'Newsreader', serif; font-style:italic; font-size:30px; color:var(--muted); margin:0 0 24px; font-weight:400; }
+  .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px; letter-spacing:0.14em; color:var(--accent);
+    text-transform:uppercase; margin-bottom:28px;
+  }
+  ul{ padding-left:0; list-style:none; margin:0; }
+  ul li{ font-size:22px; line-height:1.55; padding:10px 0; border-top:1px solid var(--rule); color:#2a2a2a; }
+  ul li:last-child{ border-bottom:1px solid var(--rule); }
+  ul li strong{ color:var(--ink); font-weight:600; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start; }
+  .three{ display:grid; grid-template-columns:repeat(3,1fr); gap:32px; }
+  table{ width:100%; border-collapse:collapse; font-size:19px; }
+  th,td{ padding:12px 14px; text-align:left; border-bottom:1px solid var(--rule); }
+  th{ font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); font-weight:500; }
+  td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .pos{ font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.08em; color:var(--accent); background:var(--accent-soft); padding:3px 8px; border-radius:3px; }
+  .stat{ border-top:1px solid var(--ink); padding-top:12px; }
+  .stat .n{ font-family:'Newsreader', serif; font-size:72px; line-height:1; }
+  .stat .l{ font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-top:8px; }
+  .katex-display{ margin:14px 0 !important; }
+  .katex{ font-size:22px !important; }
+  pre{
+    background:#1a1a1a; color:#f6f5f1; padding:20px 24px; border-radius:4px;
+    font-family:'IBM Plex Mono', monospace; font-size:15px; line-height:1.6; overflow:hidden;
+  }
+  .pill{
+    display:inline-block; font-family:'IBM Plex Mono', monospace;
+    font-size:13px; letter-spacing:0.06em; padding:4px 10px;
+    border:1px solid var(--rule); border-radius:20px; margin:0 4px 6px 0; color:#2a2a2a;
+  }
+  .note{ font-size:18px; color:var(--muted); font-style:italic; font-family:'Newsreader', serif; }
+  .footer-note{ margin-top:auto; font-size:16px; color:var(--muted); font-family:'IBM Plex Mono', monospace; letter-spacing:0.06em; }
+
+  /* Title slide */
+  .title-slide{ padding:110px; justify-content:center; }
+  .title-slide::before, .title-slide::after{ display:none; }
+  .title-slide .qr{ position:absolute; top:90px; right:110px; width:140px; height:140px; background:#fff; padding:10px; border:1px solid var(--rule); }
+  .title-slide .qr img{ width:100%; height:100%; display:block; }
+  .title-slide h1{ font-size:120px; }
+  .title-slide .meta{
+    position:absolute; bottom:90px; left:110px;
+    font-family:'IBM Plex Mono', monospace; font-size:14px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .title-slide .rule{ width:120px; height:3px; background:var(--accent); margin:0 0 36px; }
+
+  /* End slide */
+  .end-slide{ justify-content:center; align-items:center; text-align:center; }
+  .end-slide .qr{ width:240px; height:240px; background:#fff; padding:14px; border:1px solid var(--rule); margin:40px auto 0; }
+  .end-slide .qr img{ width:100%; height:100%; display:block; }
+
+  /* Constraints list */
+  .constraints{ display:grid; grid-template-columns:1fr; gap:10px; }
+  .constraints .row{ display:grid; grid-template-columns:1fr 180px; align-items:center; gap:20px; padding:8px 0; border-top:1px solid var(--rule); }
+  .constraints .row:last-child{ border-bottom:1px solid var(--rule); }
+  .constraints .tag{ font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--muted); text-align:right; }
+
+  /* Squad result */
+  .squad{ font-size:18px; }
+  .squad td, .squad th{ padding:10px 12px; }
+  .totals{ display:flex; gap:60px; margin-top:28px; padding-top:20px; border-top:2px solid var(--ink); }
+  .totals .stat{ border:none; padding:0; }
+  .totals .stat .n{ font-size:54px; }
+
+  .weights table{ font-size:17px; }
+  .weights td:first-child{ font-weight:600; }
+  .weights .group-start td{ border-top:2px solid var(--ink); }
+</style>
+</head>
+<body>
+<deck-stage>
+
+<!-- 1: Title -->
+<section class="title-slide" data-screen-label="01 Title">
+  <div class="qr"><img src="../../../../Downloads/LPSoccer%20(1)/qr.png" alt="qr"></div>
+  <div>
+    <div class="rule"></div>
+    <div class="kicker">Linear Programming · Case Study</div>
+    <h1>FC26 Squad<br>Optimizer</h1>
+    <p class="sub" style="max-width:780px">Selecting the highest-rated 11-player squad subject to real-world constraints.</p>
+  </div>
+  <div class="meta">Scan for project · LP &middot; PuLP &middot; CBC</div>
+</section>
+
+<!-- 2: Motivation -->
+<section data-screen-label="02 Motivation">
+  <div class="crumb">01 / Motivation</div>
+  <h2>Given 18,000 players and a fixed budget,<br>which 11 should you pick?</h2>
+  <div class="two" style="gap:80px">
+    <div>
+      <h3>Three ways to answer</h3>
+      <ul>
+        <li><strong>Naïve —</strong> sort by overall rating. Ignores budget, position balance, club rules.</li>
+        <li><strong>Heuristic —</strong> pick "good" players manually. Sub-optimal, slow, not reproducible.</li>
+        <li><strong>LP —</strong> encode every rule as a constraint; a solver guarantees the global optimum.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Where this shows up</h3>
+      <ul>
+        <li>Football Manager &amp; FC26 Ultimate Team squad building</li>
+        <li>Fantasy football draft tools</li>
+        <li>Real scouting departments with salary-cap constraints</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3: Dataset -->
+<section data-screen-label="03 Dataset">
+  <div class="crumb">02 / Dataset</div>
+  <h2>FC26 player attributes</h2>
+  <p class="note">Source: <span style="font-family:'IBM Plex Mono',monospace;font-style:normal">FC26_20250921.csv</span></p>
+
+  <div class="two" style="gap:80px; margin-top:20px">
+    <div>
+      <div class="three" style="gap:24px">
+        <div class="stat"><div class="n">18,297</div><div class="l">Players loaded</div></div>
+        <div class="stat"><div class="n">33</div><div class="l">Attribute columns</div></div>
+        <div class="stat"><div class="n">4</div><div class="l">Position groups</div></div>
+      </div>
+      <p style="margin-top:36px" class="note">Attributes coerced to numeric; NaN filled with 0.</p>
+    </div>
+    <div>
+      <h3>33 attributes, six groups</h3>
+      <div>
+        <span class="pill">movement</span>
+        <span class="pill">attacking</span>
+        <span class="pill">power</span>
+        <span class="pill">skill</span>
+        <span class="pill">mentality</span>
+        <span class="pill">defending</span>
+        <span class="pill">goalkeeping</span>
+      </div>
+      <h3 style="margin-top:32px">Position categories</h3>
+      <div>
+        <span class="pill">GKP</span><span class="pill">DEF</span><span class="pill">MID</span><span class="pill">FWD</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4: Position-specific scoring -->
+<section data-screen-label="04 Scoring" class="weights">
+  <div class="crumb">03 / Scoring</div>
+  <h2>Each player gets four scores —<br>one per position archetype.</h2>
+  <div class="two" style="gap:64px; margin-top:8px">
+    <table>
+      <thead><tr><th>Position</th><th>Component</th><th class="num">Weight</th></tr></thead>
+      <tbody>
+        <tr class="group-start"><td rowspan="5"><span class="pos">FWD</span></td><td>Finishing</td><td class="num">30%</td></tr>
+        <tr><td>Pace</td><td class="num">20%</td></tr>
+        <tr><td>Dribbling</td><td class="num">20%</td></tr>
+        <tr><td>Physical</td><td class="num">15%</td></tr>
+        <tr><td>Mental</td><td class="num">15%</td></tr>
+        <tr class="group-start"><td rowspan="5"><span class="pos">MID</span></td><td>Passing</td><td class="num">30%</td></tr>
+        <tr><td>Pace / Reactions</td><td class="num">20%</td></tr>
+        <tr><td>Dribbling</td><td class="num">20%</td></tr>
+        <tr><td>Physical</td><td class="num">15%</td></tr>
+        <tr><td>Defending</td><td class="num">15%</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Position</th><th>Component</th><th class="num">Weight</th></tr></thead>
+      <tbody>
+        <tr class="group-start"><td rowspan="4"><span class="pos">DEF</span></td><td>Defending</td><td class="num">40%</td></tr>
+        <tr><td>Physical</td><td class="num">25%</td></tr>
+        <tr><td>Mental</td><td class="num">20%</td></tr>
+        <tr><td>Pace</td><td class="num">15%</td></tr>
+        <tr class="group-start"><td rowspan="3"><span class="pos">GK</span></td><td>Shot-stopping</td><td class="num">60%</td></tr>
+        <tr><td>Distribution</td><td class="num">30%</td></tr>
+        <tr><td>Mobility</td><td class="num">10%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="footer-note">The rating used in the LP is the score matching the player's primary position.</p>
+</section>
+
+<!-- 5: LP formulation -->
+<section data-screen-label="05 LP Formulation">
+  <div class="crumb">04 / LP Formulation</div>
+  <h2>Sets, parameters, variables</h2>
+  <div class="two" style="gap:80px">
+    <div>
+      <h3>Sets &amp; parameters</h3>
+      <table>
+        <tbody>
+          <tr><td>$I$</td><td>All players ($I = 18{,}297$)</td></tr>
+          <tr><td>$I_{GK}, I_{DEF}, I_{MID}, I_{FWD}$</td><td>Players by primary position</td></tr>
+          <tr><td>$r_i$</td><td>Positional rating of player $i$</td></tr>
+          <tr><td>$p_i$</td><td>Market value (€) of player $i$</td></tr>
+          <tr><td>$B$</td><td>Budget cap</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Decision variables</h3>
+      <div style="font-size:24px; padding:20px 0">
+        $$x_i \in \{0, 1\} \quad \forall\, i \in I$$
+      </div>
+      <p>$x_i = 1$ if player $i$ is selected, otherwise $0$.</p>
+      <h3 style="margin-top:32px">Objective</h3>
+      <p style="color:var(--muted)">Maximise total squad rating</p>
+      <div style="font-size:26px">
+        $$\max_{x} \;\; \sum_{i \in I} r_i \, x_i$$
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6: Constraints -->
+<section data-screen-label="06 Constraints">
+  <div class="crumb">05 / Constraints</div>
+  <h2>Subject to</h2>
+  <div class="constraints" style="font-size:22px">
+    <div class="row"><div>$\sum_{i \in I} p_i \, x_i \;\leq\; B$</div><div class="tag">Budget</div></div>
+    <div class="row"><div>$\sum_{i \in I_{GK}} x_i = 1$</div><div class="tag">Exactly one GK</div></div>
+    <div class="row"><div>$\sum_{i \in I_{DEF}} x_i \;\geq\; 2$</div><div class="tag">DEF floor</div></div>
+    <div class="row"><div>$\sum_{i \in I_{MID}} x_i \;\geq\; 2$</div><div class="tag">MID floor</div></div>
+    <div class="row"><div>$\sum_{i \in I_{FWD}} x_i \;\geq\; 2$</div><div class="tag">FWD floor</div></div>
+    <div class="row"><div>$\sum_{i \in I} x_i = 11$</div><div class="tag">Squad size</div></div>
+    <div class="row"><div>$x_i \in \{0, 1\} \quad \forall\, i \in I$</div><div class="tag">Integrality</div></div>
+  </div>
+  <p class="footer-note">Implementation: PuLP + CBC solver in Python</p>
+</section>
+
+<!-- 7: Code -->
+<section data-screen-label="07 Implementation">
+  <div class="crumb">06 / Implementation</div>
+  <h2>From math to PuLP</h2>
+<pre>model += pulp.lpSum(x[i] * ratings[i] for i in range(n))           <span style="color:#8a8a84"># objective</span>
+model += pulp.lpSum(x[i] * prices[i]  for i in range(n)) &lt;= BUDGET  <span style="color:#8a8a84"># budget</span>
+model += pulp.lpSum(x[i] for i in range(n) if positions[i] == 'GKP') == 1
+model += pulp.lpSum(x) == 11</pre>
+  <p class="footer-note">CBC solves the MILP; a relaxed LP run yields duals (next slide).</p>
+</section>
+
+<!-- 8: Duals -->
+<section data-screen-label="08 Duals">
+  <div class="crumb">07 / Dual Variables</div>
+  <h2>Shadow prices — what each constraint costs</h2>
+  <p class="note" style="margin-top:-8px">Computed on the LP relaxation $(x_i \in [0,1])$. Each dual is the marginal value of relaxing its constraint by one unit.</p>
+  <table style="margin-top:20px">
+    <thead><tr><th>Constraint</th><th>Dual</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td>Budget $\leq B$</td><td>$\lambda_B \geq 0$</td><td>Rating gained per extra €1 of budget — the "price of cap space"</td></tr>
+      <tr><td>Squad size $= 11$</td><td>$\mu_{squad}$</td><td>Rating value of a 12th squad slot; positive → cap is binding</td></tr>
+      <tr><td>GK $= 1$</td><td>$\mu_{GK}$</td><td>Cost of holding exactly one GK vs. filling freely</td></tr>
+      <tr><td>DEF $\geq 2$</td><td>$\mu_{DEF} \leq 0$</td><td>Penalty from requiring ≥2 defenders; $0$ means non-binding</td></tr>
+      <tr><td>MID $\geq 2$</td><td>$\mu_{MID} \leq 0$</td><td>Same interpretation for midfield floor</td></tr>
+      <tr><td>FWD $\geq 2$</td><td>$\mu_{FWD} \leq 0$</td><td>Same interpretation for forward floor</td></tr>
+    </tbody>
+  </table>
+  <p class="footer-note">$\lambda_B$ bridges the accountant's budget and the coach's ratings — it tells exactly how much squad quality each extra million buys.</p>
+</section>
+
+<!-- 9: Results -->
+<section data-screen-label="09 Results">
+  <div class="crumb">08 / Results</div>
+  <h2>Optimal squad <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;color:var(--muted);letter-spacing:0.06em"> &nbsp; €1,000M · 1–3–2–5</span></h2>
+  <table class="squad">
+    <thead><tr><th>Pos</th><th>Player</th><th>Club</th><th class="num">Rating</th><th class="num">Value</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pos">GKP</span></td><td>Alisson</td><td>Liverpool</td><td class="num">84.2</td><td class="num">€51.0M</td></tr>
+      <tr><td><span class="pos">DEF</span></td><td>V. van Dijk</td><td>Liverpool</td><td class="num">86.8</td><td class="num">€57.0M</td></tr>
+      <tr><td><span class="pos">DEF</span></td><td>Marquinhos</td><td>Paris Saint-Germain</td><td class="num">85.1</td><td class="num">€54.5M</td></tr>
+      <tr><td><span class="pos">DEF</span></td><td>A. Rüdiger</td><td>Real Madrid</td><td class="num">84.4</td><td class="num">€44.0M</td></tr>
+      <tr><td><span class="pos">MID</span></td><td>J. Kimmich</td><td>FC Bayern München</td><td class="num">85.4</td><td class="num">€86.0M</td></tr>
+      <tr><td><span class="pos">MID</span></td><td>N. Barella</td><td>Inter</td><td class="num">85.0</td><td class="num">€79.5M</td></tr>
+      <tr><td><span class="pos">FWD</span></td><td>K. Mbappé</td><td>Real Madrid</td><td class="num">90.4</td><td class="num">€173.5M</td></tr>
+      <tr><td><span class="pos">FWD</span></td><td>O. Dembélé</td><td>Paris Saint-Germain</td><td class="num">88.2</td><td class="num">€122.5M</td></tr>
+      <tr><td><span class="pos">FWD</span></td><td>V. Osimhen</td><td>Galatasaray SK</td><td class="num">86.2</td><td class="num">€100.0M</td></tr>
+      <tr><td><span class="pos">FWD</span></td><td>L. Martínez</td><td>Inter</td><td class="num">86.2</td><td class="num">€99.0M</td></tr>
+      <tr><td><span class="pos">FWD</span></td><td>V. Gyökeres</td><td>Arsenal</td><td class="num">85.8</td><td class="num">€93.0M</td></tr>
+    </tbody>
+  </table>
+  <div class="totals">
+    <div class="stat"><div class="n">947.7</div><div class="l">Total rating</div></div>
+    <div class="stat"><div class="n">€960.0M</div><div class="l">Spent of €1,000M</div></div>
+    <div class="stat"><div class="n">€40.0M</div><div class="l">Unused cap</div></div>
+  </div>
+</section>
+
+<!-- 10: Streamlit app -->
+<section data-screen-label="10 App">
+  <div class="crumb">09 / Interactive App</div>
+  <h2>Streamlit front-end</h2>
+  <p class="note" style="margin-top:-8px"><span style="font-family:'IBM Plex Mono',monospace;font-style:normal">FC26LP/app.py</span></p>
+  <div class="two" style="gap:80px; margin-top:8px">
+    <div>
+      <h3>Sidebar</h3>
+      <ul>
+        <li>Budget slider &mdash; €100M to €1,000M</li>
+        <li>Formation inputs &mdash; DEF / MID / FWD must sum to 10</li>
+        <li>Nationality &amp; Club multiselect filters</li>
+        <li>Optimize Squad button &mdash; disabled on invalid formation</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Results</h3>
+      <ul>
+        <li>Colour-coded tables per position group</li>
+        <li>Total Rating &amp; Budget Used metrics with progress bar</li>
+        <li>Club diversity rule: $\sum_{i \in C_c} x_i \leq 3$ per club $c$, auto-relaxed when a club filter is applied</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 11: End -->
+<section class="end-slide" data-screen-label="11 End">
+  <div>
+    <div class="kicker" style="text-align:center">Thank you</div>
+    <h1 style="text-align:center; font-size:96px">Questions?</h1>
+    <p class="sub" style="text-align:center">Scan for the project &amp; source.</p>
+    <div class="qr"><img src="../../../../Downloads/LPSoccer%20(1)/qr.png" alt="qr"></div>
+  </div>
+</section>
+
+</deck-stage>
+</body>
+</html>
