@@ -4,7 +4,6 @@ theme: default
 paginate: true
 math: katex
 ---
-<img src="Presentation/img.png" width="200">
 
 # FC26 Squad Optimizer
 ## Linear Programming for Optimal Football Squad Selection
